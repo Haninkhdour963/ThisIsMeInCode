@@ -1,0 +1,211 @@
+@model HaneenWebApp.Models.Haneen
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>عالم حنين</title>
+    <style>
+        :root {
+            --main-bg: #fff;
+            --card-bg: #f8f9fa;
+            --text-color: #333;
+            --accent: #ba68c8;
+            --accent-dark: #8e24aa;
+            --log-bg: #f1f8e9;
+            --log-border: #c5e1a5;
+        }
+
+        body.dark {
+            --main-bg: #1e1e1e;
+            --card-bg: #2c2c2c;
+            --text-color: #eee;
+            --accent: #ce93d8;
+            --accent-dark: #ab47bc;
+            --log-bg: #263238;
+            --log-border: #455a64;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--main-bg);
+            margin: 0;
+            padding: 2rem;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 700px;
+            background: var(--main-bg);
+            margin: auto;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent-dark);
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+
+        .info-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            border-left: 5px solid var(--accent);
+        }
+
+            .info-card p {
+                margin: 0.4rem 0;
+                font-size: 1.1rem;
+            }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            background-color: var(--accent);
+            border: none;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            font-size: 1.05rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(186, 104, 200, 0.4);
+        }
+
+            button:hover {
+                background-color: var(--accent-dark);
+                transform: translateY(-2px);
+            }
+
+        .log {
+            margin-top: 2rem;
+            background-color: var(--log-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--log-border);
+        }
+
+            .log h3 {
+                color: var(--accent-dark);
+                margin-bottom: 1rem;
+            }
+
+            .log ul {
+                padding: 0;
+                list-style: inside disc;
+            }
+
+        .toast {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--accent);
+            color: white;
+            padding: 0.7rem 1.2rem;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 9999;
+        }
+
+            .toast.show {
+                opacity: 1;
+            }
+
+        .dark-toggle {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+            .dark-toggle button {
+                background-color: #333;
+                padding: 0.5rem 1rem;
+                font-size: 0.95rem;
+                border-radius: 20px;
+                color: white;
+            }
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast">مرحباً بكِ يا حنين 💜</div>
+
+    <div class="container">
+        <h1>مرحباً في عالم حنين 🌟</h1>
+
+        <div class="info-card">
+            <p><strong>المزاج الحالي:</strong> @Model.Mood</p>
+            <p><strong>المهارات:</strong> @string.Join("، ", Model.Skills)</p>
+            <p><strong>الأحلام:</strong> @string.Join("، ", Model.Dreams)</p>
+        </div>
+
+        <div class="buttons">
+            <form method="post" asp-action="TryAction" asp-controller="Haneen" onsubmit="return showActionToast('جربي وانطلقي ✨')">
+                <button type="submit">جرب</button>
+            </form>
+            <form method="post" asp-action="LearnAction" asp-controller="Haneen" onsubmit="return showActionToast('التعلم قوة 💡')">
+                <button type="submit">تعلم</button>
+            </form>
+            <form method="post" asp-action="CoffeeAction" asp-controller="Haneen" onsubmit="return showActionToast('صحة وهنا ☕')">
+                <button type="submit">خذ فنجان قهوة ☕</button>
+            </form>
+            <form method="post" asp-action="PepTalkAction" asp-controller="Haneen" onsubmit="return showActionToast('أنتِ قدها يا حنين 💪')">
+                <button type="submit">شجع نفسك</button>
+            </form>
+        </div>
+
+        <div class="log">
+            <h3>الأنشطة الأخيرة:</h3>
+            <ul>
+                @foreach (var log in Model.Logs)
+                {
+                    <li>@log</li>
+                }
+            </ul>
+        </div>
+
+        <div class="dark-toggle">
+            <button onclick="toggleDark()">تبديل الوضع الليلي 🌙</button>
+        </div>
+    </div>
+
+    <script>
+        // Toast عند تحميل الصفحة
+        window.onload = () => {
+            const toast = document.getElementById("toast");
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 3000);
+        };
+
+        // Toast عند الضغط على زر
+        function showActionToast(message) {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 2000);
+            return true; // يُكمل تنفيذ الفورم
+        }
+
+        // تبديل الوضع الليلي
+        function toggleDark() {
+            document.body.classList.toggle("dark");
+        }
+    </script>
+</body>
+</html>
